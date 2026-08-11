@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wali-Facturation — Direction 2 : Référence Stripe (Angled Fluid Gradient)</title>
 <style>
   :root{
@@ -9,37 +10,70 @@
     --muted:#6B7280;
     --card-bg:#FFFFFF;
     --line:#E7E6F5;
+    --brand:#635BFF;
+    --brand-2:#8B7CFF;
+    --gap-section:clamp(64px, 12vw, 140px);
+    --pad-x:clamp(20px, 6vw, 64px);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  html{-webkit-text-size-adjust:100%;}
+  html, body{overflow-x:hidden;}
   body{
     font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     color:var(--ink);
     background:#fff;
     -webkit-font-smoothing:antialiased;
+    text-wrap:pretty;
   }
+  img, svg{max-width:100%;display:block;}
+  a{-webkit-tap-highlight-color:transparent;}
+
+  /* ===== Nav ===== */
   .topbar{
     position:relative;
-    z-index:5;
+    z-index:20;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:28px 64px;
+    padding:22px var(--pad-x);
   }
   .logo{font-weight:700;font-size:18px;letter-spacing:-0.01em;color:#1A1533;}
-  .logo span{color:#635BFF;}
-  nav{display:flex;gap:36px;align-items:center;}
-  nav a{color:#1A1533;text-decoration:none;font-size:14px;font-weight:500;}
-  nav .cta{background:#1A1533;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;}
+  .logo span{color:var(--brand);}
+  nav.links{display:flex;gap:36px;align-items:center;}
+  nav.links a{color:#1A1533;text-decoration:none;font-size:14px;font-weight:500;}
+  nav.links a:not(.cta){
+    position:relative;
+    padding-bottom:2px;
+  }
+  nav.links a:not(.cta)::after{
+    content:"";
+    position:absolute;left:0;bottom:0;
+    width:0;height:1.5px;
+    background:var(--brand);
+    transition:width .35s cubic-bezier(.32,.72,0,1);
+  }
+  nav.links a:not(.cta):hover::after{width:100%;}
+  nav.links .cta{
+    background:#1A1533;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;
+    transition:transform .35s cubic-bezier(.32,.72,0,1), background .25s ease;
+    display:inline-block;
+  }
+  nav.links .cta:hover{transform:translateY(-1px);background:#241C4A;}
+  nav.links .cta:active{transform:translateY(0) scale(.98);}
 
+  .menu-toggle{display:none;}
+  .menu-toggle-label{display:none;}
+
+  /* ===== Hero ===== */
   .hero-wrap{
     position:relative;
     overflow:hidden;
-    padding-bottom:140px;
+    padding-bottom:clamp(60px, 10vw, 140px);
   }
   .gradient-band{
     position:absolute;
     inset:0;
-    background:linear-gradient(120deg,#635BFF 0%,#8B7CFF 22%,#4FC3F7 48%,#FF8A65 74%,#FFC15E 100%);
+    background:linear-gradient(120deg,var(--brand) 0%,var(--brand-2) 22%,#4FC3F7 48%,#FF8A65 74%,#FFC15E 100%);
     clip-path:polygon(0 0, 100% 0, 100% 62%, 0 82%);
     opacity:0.95;
   }
@@ -51,8 +85,9 @@
   .hero-content{
     position:relative;
     z-index:2;
-    padding:64px 64px 0;
+    padding:clamp(28px, 6vw, 64px) var(--pad-x) 0;
     max-width:640px;
+    animation:fadeUp .8s cubic-bezier(.22,.9,.32,1) both;
   }
   .hero-content .eyebrow{
     display:inline-block;
@@ -62,43 +97,61 @@
     font-weight:600;
     padding:6px 14px;
     border-radius:100px;
-    margin-bottom:28px;
+    margin-bottom:24px;
     letter-spacing:0.02em;
   }
   .hero-content h1{
     color:#fff;
-    font-size:clamp(36px,5vw,58px);
+    font-size:clamp(30px, 6vw, 58px);
     font-weight:700;
-    line-height:1.1;
+    line-height:1.12;
     letter-spacing:-0.02em;
   }
   .hero-content p{
     color:rgba(255,255,255,0.92);
-    font-size:18px;
+    font-size:clamp(15px, 2vw, 18px);
     line-height:1.6;
-    margin-top:24px;
+    margin-top:20px;
     max-width:480px;
   }
-  .hero-actions{margin-top:36px;display:flex;gap:16px;}
-  .btn-white{background:#fff;color:#1A1533;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;text-decoration:none;}
-  .btn-outline{border:1.5px solid rgba(255,255,255,0.7);color:#fff;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;text-decoration:none;}
+  .hero-actions{margin-top:32px;display:flex;gap:14px;flex-wrap:wrap;}
+  .btn-white, .btn-outline{
+    padding:14px 26px;border-radius:8px;font-weight:600;font-size:15px;text-decoration:none;
+    transition:transform .35s cubic-bezier(.32,.72,0,1), box-shadow .35s ease;
+    display:inline-block;
+  }
+  .btn-white{background:#fff;color:#1A1533;}
+  .btn-white:hover{transform:translateY(-2px);box-shadow:0 10px 24px -8px rgba(0,0,0,.35);}
+  .btn-outline{border:1.5px solid rgba(255,255,255,0.7);color:#fff;}
+  .btn-outline:hover{transform:translateY(-2px);background:rgba(255,255,255,0.1);}
+  .btn-white:active, .btn-outline:active{transform:translateY(0) scale(.98);}
 
-  .mock-card{
+  /* ===== Mock invoice card (double-bezel: shell + inner core) ===== */
+  .mock-card-shell{
     position:relative;
     z-index:3;
     max-width:1000px;
-    margin:80px auto 0;
+    margin:clamp(40px, 8vw, 80px) var(--pad-x) 0;
+    background:rgba(255,255,255,0.35);
+    border-radius:22px;
+    padding:6px;
+    box-shadow:0 30px 60px -20px rgba(26,21,51,0.3);
+  }
+  @media (min-width:720px){
+    .mock-card-shell{ margin-left:auto; margin-right:auto; }
+  }
+  .mock-card{
     background:var(--card-bg);
-    border-radius:16px;
-    box-shadow:0 30px 60px -20px rgba(26,21,51,0.25);
-    padding:32px;
+    border-radius:18px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.6);
+    padding:clamp(20px, 4vw, 32px);
     display:grid;
     grid-template-columns:1.3fr 1fr;
-    gap:32px;
+    gap:clamp(16px, 3vw, 32px);
   }
-  .mock-card .invoice-panel{border-right:1px solid var(--line);padding-right:32px;}
-  .mock-card .invoice-panel .row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--line);font-size:14px;color:var(--muted);}
-  .mock-card .invoice-panel .row strong{color:var(--ink);}
+  .mock-card .invoice-panel{border-right:1px solid var(--line);padding-right:clamp(16px, 3vw, 32px);}
+  .mock-card .invoice-panel .row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line);font-size:14px;color:var(--muted);}
+  .mock-card .invoice-panel .row strong{color:var(--ink);text-align:right;}
   .mock-card .invoice-panel .total{display:flex;justify-content:space-between;padding-top:20px;font-size:20px;font-weight:700;}
   .status-panel{display:flex;flex-direction:column;gap:16px;justify-content:center;}
   .status-pill{display:inline-flex;align-items:center;gap:8px;background:#ECFDF3;color:#036B26;padding:8px 16px;border-radius:100px;font-size:13px;font-weight:600;width:fit-content;}
@@ -106,38 +159,111 @@
   .status-panel .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;}
   .status-panel .value{font-size:26px;font-weight:700;}
 
+  @media (max-width:719px){
+    .mock-card{grid-template-columns:1fr;}
+    .mock-card .invoice-panel{border-right:none;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:20px;}
+    .status-panel{padding-top:4px;}
+  }
+
+  /* ===== Features ===== */
   .features{
     max-width:1100px;
-    margin:120px auto 0;
-    padding:0 64px;
+    margin:var(--gap-section) auto 0;
+    padding:0 var(--pad-x);
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:40px;
+    gap:clamp(28px, 4vw, 40px);
+  }
+  @media (max-width:900px){
+    .features{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:560px){
+    .features{grid-template-columns:1fr;gap:32px;}
   }
   .feature h3{font-size:18px;font-weight:700;margin-bottom:10px;}
   .feature p{font-size:14px;color:var(--muted);line-height:1.65;}
-  .feature .icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#635BFF,#8B7CFF);margin-bottom:18px;}
+  .feature .icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-2));margin-bottom:18px;}
 
+  /* ===== Footer ===== */
   footer{
-    margin-top:140px;
-    padding:40px 64px;
+    margin-top:var(--gap-section);
+    padding:32px var(--pad-x);
     border-top:1px solid var(--line);
     display:flex;
     justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
     font-size:13px;
     color:var(--muted);
+  }
+
+  @keyframes fadeUp{
+    from{opacity:0; transform:translateY(14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+
+  /* ===== Mobile nav (checkbox-driven, no JS) ===== */
+  @media (max-width:719px){
+    nav.links{
+      position:fixed;
+      inset:0;
+      z-index:15;
+      background:rgba(20,16,45,0.97);
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      flex-direction:column;
+      justify-content:center;
+      align-items:flex-start;
+      padding:32px;
+      gap:26px;
+      transform:translateY(-12px);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .35s cubic-bezier(.32,.72,0,1), transform .35s cubic-bezier(.32,.72,0,1);
+    }
+    nav.links a{color:#fff;font-size:22px;}
+    nav.links a.cta{background:#fff;color:#1A1533;margin-top:12px;}
+    .menu-toggle:checked ~ nav.links{
+      opacity:1;
+      transform:translateY(0);
+      pointer-events:auto;
+    }
+    .menu-toggle-label{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:5px;
+      width:28px;height:22px;
+      cursor:pointer;
+      position:relative;
+      z-index:20;
+    }
+    .menu-toggle-label span{
+      display:block;height:2px;width:100%;background:#1A1533;border-radius:2px;
+      transition:transform .3s cubic-bezier(.32,.72,0,1), opacity .3s ease;
+    }
+    .menu-toggle:checked ~ .menu-toggle-label span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+    .menu-toggle:checked ~ .menu-toggle-label span:nth-child(2){opacity:0;}
+    .menu-toggle:checked ~ .menu-toggle-label span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
   }
 </style>
 </head>
 <body>
   <header class="topbar">
     <div class="logo">Wali<span>Facturation</span></div>
-    <nav>
+    <input type="checkbox" id="menu-toggle" class="menu-toggle">
+    <nav class="links">
       <a href="#">Produit</a>
       <a href="#">Tarifs</a>
       <a href="#">Connexion</a>
       <a href="#" class="cta">Essai gratuit</a>
     </nav>
+    <label for="menu-toggle" class="menu-toggle-label" aria-label="Ouvrir le menu">
+      <span></span><span></span><span></span>
+    </label>
   </header>
 
   <div class="hero-wrap">
@@ -152,18 +278,20 @@
       </div>
     </div>
 
-    <div class="mock-card">
-      <div class="invoice-panel">
-        <div class="row"><span>Facture</span><strong>#WF-2026-0143</strong></div>
-        <div class="row"><span>Client</span><strong>Atelier Nour SARL</strong></div>
-        <div class="row"><span>Échéance</span><strong>25 août 2026</strong></div>
-        <div class="row"><span>Prestation</span><strong>Refonte identité visuelle</strong></div>
-        <div class="total"><span>Total TTC</span><span>3 240,00 €</span></div>
-      </div>
-      <div class="status-panel">
-        <div class="status-pill">Payée automatiquement</div>
-        <div class="label">Encaissé ce mois-ci</div>
-        <div class="value">18 940 €</div>
+    <div class="mock-card-shell">
+      <div class="mock-card">
+        <div class="invoice-panel">
+          <div class="row"><span>Facture</span><strong>#WF-2026-0143</strong></div>
+          <div class="row"><span>Client</span><strong>Atelier Nour SARL</strong></div>
+          <div class="row"><span>Échéance</span><strong>25 août 2026</strong></div>
+          <div class="row"><span>Prestation</span><strong>Refonte identité visuelle</strong></div>
+          <div class="total"><span>Total TTC</span><span>3 240,00 €</span></div>
+        </div>
+        <div class="status-panel">
+          <div class="status-pill">Payée automatiquement</div>
+          <div class="label">Encaissé ce mois-ci</div>
+          <div class="value">18 940 €</div>
+        </div>
       </div>
     </div>
   </div>
