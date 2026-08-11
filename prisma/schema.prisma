@@ -1,0 +1,73 @@
+// Prisma schema — Wali-Facturation MVP
+// SQLite en local pour demarrer sans dependance externe.
+// Pas d'enum natif en SQLite: statuts/types stockes en String, valeurs
+// contraintes cote application (voir src/lib/constants.ts).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Client {
+  id        String     @id @default(cuid())
+  nom       String
+  email     String?
+  telephone String?
+  adresse   String?
+  documents Document[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// Un Document est un devis OU une facture (type distingue les deux).
+// La conversion devis -> facture cree un nouveau Document lie via
+// convertedFromId, plutot que de muter le devis d'origine.
+model Document {
+  id        String   @id @default(cuid())
+  type      String // "DEVIS" | "FACTURE"
+  numero    String   @unique
+  statut    String // voir src/lib/constants.ts pour les valeurs valides par type
+  dateEmission DateTime @default(now())
+  dateEcheance DateTime?
+  notes     String?
+
+  client   Client @relation(fields: [clientId], references: [id])
+  clientId String
+
+  lignes    LigneDocument[]
+  paiements Paiement[]
+
+  convertedFrom   Document? @relation("Conversion", fields: [convertedFromId], references: [id])
+  convertedFromId String?   @unique
+  convertedTo     Document? @relation("Conversion")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([type, statut])
+}
+
+model LigneDocument {
+  id            String   @id @default(cuid())
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId    String
+  description   String
+  quantite      Float    @default(1)
+  prixUnitaire  Float
+  ordre         Int      @default(0)
+}
+
+model Paiement {
+  id         String   @id @default(cuid())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  montant    Float
+  date       DateTime @default(now())
+  methode    String? // "virement" | "carte" | "cheque" | "especes" | ...
+  note       String?
+}
