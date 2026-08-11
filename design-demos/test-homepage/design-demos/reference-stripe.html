@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Wali-Facturation — Direction 2 : Référence Stripe (Angled Fluid Gradient)</title>
+<style>
+  :root{
+    --ink:#0A0A0A;
+    --muted:#6B7280;
+    --card-bg:#FFFFFF;
+    --line:#E7E6F5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:var(--ink);
+    background:#fff;
+    -webkit-font-smoothing:antialiased;
+  }
+  .topbar{
+    position:relative;
+    z-index:5;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:28px 64px;
+  }
+  .logo{font-weight:700;font-size:18px;letter-spacing:-0.01em;color:#1A1533;}
+  .logo span{color:#635BFF;}
+  nav{display:flex;gap:36px;align-items:center;}
+  nav a{color:#1A1533;text-decoration:none;font-size:14px;font-weight:500;}
+  nav .cta{background:#1A1533;color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;}
+
+  .hero-wrap{
+    position:relative;
+    overflow:hidden;
+    padding-bottom:140px;
+  }
+  .gradient-band{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg,#635BFF 0%,#8B7CFF 22%,#4FC3F7 48%,#FF8A65 74%,#FFC15E 100%);
+    clip-path:polygon(0 0, 100% 0, 100% 62%, 0 82%);
+    opacity:0.95;
+  }
+  .gradient-band::after{
+    content:"";
+    position:absolute;inset:0;
+    background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.25), transparent 55%);
+  }
+  .hero-content{
+    position:relative;
+    z-index:2;
+    padding:64px 64px 0;
+    max-width:640px;
+  }
+  .hero-content .eyebrow{
+    display:inline-block;
+    background:rgba(255,255,255,0.2);
+    color:#fff;
+    font-size:12px;
+    font-weight:600;
+    padding:6px 14px;
+    border-radius:100px;
+    margin-bottom:28px;
+    letter-spacing:0.02em;
+  }
+  .hero-content h1{
+    color:#fff;
+    font-size:clamp(36px,5vw,58px);
+    font-weight:700;
+    line-height:1.1;
+    letter-spacing:-0.02em;
+  }
+  .hero-content p{
+    color:rgba(255,255,255,0.92);
+    font-size:18px;
+    line-height:1.6;
+    margin-top:24px;
+    max-width:480px;
+  }
+  .hero-actions{margin-top:36px;display:flex;gap:16px;}
+  .btn-white{background:#fff;color:#1A1533;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;text-decoration:none;}
+  .btn-outline{border:1.5px solid rgba(255,255,255,0.7);color:#fff;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;text-decoration:none;}
+
+  .mock-card{
+    position:relative;
+    z-index:3;
+    max-width:1000px;
+    margin:80px auto 0;
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 30px 60px -20px rgba(26,21,51,0.25);
+    padding:32px;
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:32px;
+  }
+  .mock-card .invoice-panel{border-right:1px solid var(--line);padding-right:32px;}
+  .mock-card .invoice-panel .row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed var(--line);font-size:14px;color:var(--muted);}
+  .mock-card .invoice-panel .row strong{color:var(--ink);}
+  .mock-card .invoice-panel .total{display:flex;justify-content:space-between;padding-top:20px;font-size:20px;font-weight:700;}
+  .status-panel{display:flex;flex-direction:column;gap:16px;justify-content:center;}
+  .status-pill{display:inline-flex;align-items:center;gap:8px;background:#ECFDF3;color:#036B26;padding:8px 16px;border-radius:100px;font-size:13px;font-weight:600;width:fit-content;}
+  .status-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:#12B76A;}
+  .status-panel .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;}
+  .status-panel .value{font-size:26px;font-weight:700;}
+
+  .features{
+    max-width:1100px;
+    margin:120px auto 0;
+    padding:0 64px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:40px;
+  }
+  .feature h3{font-size:18px;font-weight:700;margin-bottom:10px;}
+  .feature p{font-size:14px;color:var(--muted);line-height:1.65;}
+  .feature .icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#635BFF,#8B7CFF);margin-bottom:18px;}
+
+  footer{
+    margin-top:140px;
+    padding:40px 64px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    font-size:13px;
+    color:var(--muted);
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">Wali<span>Facturation</span></div>
+    <nav>
+      <a href="#">Produit</a>
+      <a href="#">Tarifs</a>
+      <a href="#">Connexion</a>
+      <a href="#" class="cta">Essai gratuit</a>
+    </nav>
+  </header>
+
+  <div class="hero-wrap">
+    <div class="gradient-band"></div>
+    <div class="hero-content">
+      <span class="eyebrow">Nouveau · Relances automatiques</span>
+      <h1>La facturation, sans la paperasse.</h1>
+      <p>Créez vos devis et factures en quelques clics, suivez vos paiements en temps réel et laissez Wali relancer vos clients pour vous.</p>
+      <div class="hero-actions">
+        <a href="#" class="btn-white">Commencer gratuitement</a>
+        <a href="#" class="btn-outline">Voir la démo</a>
+      </div>
+    </div>
+
+    <div class="mock-card">
+      <div class="invoice-panel">
+        <div class="row"><span>Facture</span><strong>#WF-2026-0143</strong></div>
+        <div class="row"><span>Client</span><strong>Atelier Nour SARL</strong></div>
+        <div class="row"><span>Échéance</span><strong>25 août 2026</strong></div>
+        <div class="row"><span>Prestation</span><strong>Refonte identité visuelle</strong></div>
+        <div class="total"><span>Total TTC</span><span>3 240,00 €</span></div>
+      </div>
+      <div class="status-panel">
+        <div class="status-pill">Payée automatiquement</div>
+        <div class="label">Encaissé ce mois-ci</div>
+        <div class="value">18 940 €</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="features">
+    <div class="feature">
+      <div class="icon"></div>
+      <h3>Devis → Facture en 1 clic</h3>
+      <p>Transformez un devis accepté en facture conforme sans ressaisir la moindre ligne.</p>
+    </div>
+    <div class="feature">
+      <div class="icon"></div>
+      <h3>Relances intelligentes</h3>
+      <p>Des rappels programmés, au ton que vous choisissez, envoyés automatiquement.</p>
+    </div>
+    <div class="feature">
+      <div class="icon"></div>
+      <h3>Suivi de trésorerie</h3>
+      <p>Visualisez encaissé, en attente et en retard sur un seul tableau de bord.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div>© 2026 Wali-Facturation</div>
+    <div>Direction 2 · Référence Stripe · Angled Fluid Gradient</div>
+  </footer>
+</body>
+</html>
