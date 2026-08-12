@@ -7,8 +7,20 @@ export type DocumentWithRelations = Document & {
   client: { id: string; nom: string; email: string | null };
 };
 
-export function computeTotal(lignes: Pick<LigneDocument, "quantite" | "prixUnitaire">[]): number {
+export function computeSubtotal(lignes: Pick<LigneDocument, "quantite" | "prixUnitaire">[]): number {
   return lignes.reduce((sum, l) => sum + l.quantite * l.prixUnitaire, 0);
+}
+
+export function computeTVA(subtotal: number, tauxTVA: number): number {
+  return Math.round(subtotal * (tauxTVA / 100) * 100) / 100;
+}
+
+export function computeTotal(lignes: Pick<LigneDocument, "quantite" | "prixUnitaire">[], tauxTVA?: number): number {
+  const subtotal = computeSubtotal(lignes);
+  if (tauxTVA === undefined || tauxTVA === 0) {
+    return subtotal;
+  }
+  return subtotal + computeTVA(subtotal, tauxTVA);
 }
 
 export function computeEncaisse(paiements: Pick<Paiement, "montant">[]): number {

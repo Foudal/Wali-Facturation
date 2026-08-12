@@ -35,6 +35,12 @@ model Document {
   dateEcheance DateTime?
   notes     String?
 
+  // Multi-devise et compliance locale (Phase 1)
+  devise     String  @default("EUR") // GNF, USD, EUR
+  tauxChange Float   @default(1.0) // Taux de change fixe a l'emission
+  tva        Float   @default(18.0) // Taux TVA (%), default Guinea 18%
+  montantTVA Float   @default(0.0) // Montant TVA, persiste pour audit
+
   client   Client @relation(fields: [clientId], references: [id])
   clientId String
 

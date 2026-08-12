@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PrintButton } from "@/components/print-button";
-import { computeTotal, computeEncaisse } from "@/lib/documents";
+import { computeSubtotal, computeTVA, computeEncaisse } from "@/lib/documents";
 import { formatMontant, formatDate } from "@/lib/format";
 
 export default async function PrintDocumentPage({ params }: PageProps<"/documents/[id]/print">) {
@@ -13,7 +13,9 @@ export default async function PrintDocumentPage({ params }: PageProps<"/document
 
   if (!doc) notFound();
 
-  const total = computeTotal(doc.lignes);
+  const subtotal = computeSubtotal(doc.lignes);
+  const montantTVA = computeTVA(subtotal, doc.tva);
+  const total = subtotal + montantTVA;
   const encaisse = computeEncaisse(doc.paiements);
   const isDevis = doc.type === "DEVIS";
 
@@ -34,7 +36,7 @@ export default async function PrintDocumentPage({ params }: PageProps<"/document
           </div>
           <div className="text-right">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-              {isDevis ? "Devis" : "Facture"}
+              {isDevis ? "Devis" : "Facture"} · {doc.devise}
             </p>
             <p className="text-xl font-bold text-[var(--ink-2)]">{doc.numero}</p>
             <p className="mt-1 text-xs text-[var(--muted)]">Émis le {formatDate(doc.dateEmission)}</p>
@@ -65,19 +67,25 @@ export default async function PrintDocumentPage({ params }: PageProps<"/document
               <tr key={ligne.id} className="border-b border-dashed border-[var(--line)]">
                 <td className="py-2.5 pr-2">{ligne.description}</td>
                 <td className="py-2.5 pr-2 text-[var(--muted)]">{ligne.quantite}</td>
-                <td className="py-2.5 pr-2 text-[var(--muted)]">{formatMontant(ligne.prixUnitaire)}</td>
-                <td className="py-2.5 text-right font-medium">{formatMontant(ligne.quantite * ligne.prixUnitaire)}</td>
+                <td className="py-2.5 pr-2 text-[var(--muted)]">{formatMontant(ligne.prixUnitaire, doc.devise)}</td>
+                <td className="py-2.5 text-right font-medium">{formatMontant(ligne.quantite * ligne.prixUnitaire, doc.devise)}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
         <div className="mt-6 flex flex-col items-end gap-1 border-t border-[var(--line)] pt-4">
-          <p className="text-lg font-bold text-[var(--ink-2)]">Total {isDevis ? "" : "TTC"} : {formatMontant(total)}</p>
+          <p className="text-sm text-[var(--muted)]">Sous-total : {formatMontant(subtotal, doc.devise)}</p>
+          {montantTVA > 0 && (
+            <p className="text-sm text-[var(--muted)]">
+              TVA ({doc.tva}%) : {formatMontant(montantTVA, doc.devise)}
+            </p>
+          )}
+          <p className="text-lg font-bold text-[var(--ink-2)]">Total {isDevis ? "" : "TTC"} : {formatMontant(total, doc.devise)}</p>
           {!isDevis && encaisse > 0 && (
             <>
-              <p className="text-sm text-[var(--positive-fg)]">Déjà réglé : {formatMontant(encaisse)}</p>
-              <p className="text-sm font-semibold text-[var(--ink-2)]">Reste dû : {formatMontant(total - encaisse)}</p>
+              <p className="text-sm text-[var(--positive-fg)]">Déjà réglé : {formatMontant(encaisse, doc.devise)}</p>
+              <p className="text-sm font-semibold text-[var(--ink-2)]">Reste dû : {formatMontant(total - encaisse, doc.devise)}</p>
             </>
           )}
         </div>

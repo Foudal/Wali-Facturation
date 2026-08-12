@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { nextNumero } from "@/lib/documents";
+import { nextNumero, computeSubtotal, computeTVA } from "@/lib/documents";
 import { DEVIS_STATUTS, FACTURE_STATUTS } from "@/lib/constants";
 
 type LigneInput = { description: string; quantite: number; prixUnitaire: number };
@@ -30,6 +30,8 @@ export async function createDocumentAction(formData: FormData) {
   const dateEmission = formData.get("dateEmission") as string;
   const dateEcheance = formData.get("dateEcheance") as string;
   const notes = (formData.get("notes") as string | null)?.trim() || null;
+  const devise = (formData.get("devise") as string) || "EUR";
+  const tva = parseFloat((formData.get("tva") as string) || "18.0");
 
   if (!clientId) throw new Error("Sélectionnez un client.");
 
@@ -37,6 +39,8 @@ export async function createDocumentAction(formData: FormData) {
   if (lignes.length === 0) throw new Error("Ajoutez au moins une ligne avec description, quantité et prix.");
 
   const numero = await nextNumero(type);
+  const subtotal = computeSubtotal(lignes);
+  const montantTVA = computeTVA(subtotal, tva);
 
   const doc = await prisma.document.create({
     data: {
@@ -47,6 +51,9 @@ export async function createDocumentAction(formData: FormData) {
       dateEmission: dateEmission ? new Date(dateEmission) : new Date(),
       dateEcheance: dateEcheance ? new Date(dateEcheance) : null,
       notes,
+      devise,
+      tva,
+      montantTVA,
       lignes: {
         create: lignes.map((l, ordre) => ({ ...l, ordre })),
       },
@@ -68,9 +75,14 @@ export async function updateDocumentAction(id: string, formData: FormData) {
   const dateEmission = formData.get("dateEmission") as string;
   const dateEcheance = formData.get("dateEcheance") as string;
   const notes = (formData.get("notes") as string | null)?.trim() || null;
+  const devise = (formData.get("devise") as string) || "EUR";
+  const tva = parseFloat((formData.get("tva") as string) || "18.0");
 
   const lignes = parseLignes(formData);
   if (lignes.length === 0) throw new Error("Ajoutez au moins une ligne avec description, quantité et prix.");
+
+  const subtotal = computeSubtotal(lignes);
+  const montantTVA = computeTVA(subtotal, tva);
 
   await prisma.$transaction([
     prisma.ligneDocument.deleteMany({ where: { documentId: id } }),
@@ -81,6 +93,9 @@ export async function updateDocumentAction(id: string, formData: FormData) {
         dateEmission: dateEmission ? new Date(dateEmission) : new Date(),
         dateEcheance: dateEcheance ? new Date(dateEcheance) : null,
         notes,
+        devise,
+        tva,
+        montantTVA,
         lignes: { create: lignes.map((l, ordre) => ({ ...l, ordre })) },
       },
     }),
@@ -114,6 +129,9 @@ export async function convertToFactureAction(devisId: string) {
   if (existingConversion) redirect(`/documents/${existingConversion.id}`);
 
   const numero = await nextNumero("FACTURE");
+  const subtotal = computeSubtotal(devis.lignes);
+  const montantTVA = computeTVA(subtotal, devis.tva);
+
   const facture = await prisma.document.create({
     data: {
       type: "FACTURE",
@@ -123,6 +141,10 @@ export async function convertToFactureAction(devisId: string) {
       dateEmission: new Date(),
       dateEcheance: devis.dateEcheance,
       notes: devis.notes,
+      devise: devis.devise,
+      tauxChange: devis.tauxChange,
+      tva: devis.tva,
+      montantTVA,
       convertedFromId: devis.id,
       lignes: {
         create: devis.lignes.map((l) => ({
@@ -157,8 +179,9 @@ export async function addPaiementAction(documentId: string, formData: FormData) 
       where: { id: documentId },
       include: { lignes: true, paiements: true },
     });
-    const total = doc.lignes.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0);
-    const encaisse = doc.paiements.reduce((s, p) => s + p.montant, 0);
+    const subtotal = doc.lignes.reduce((s, l) => s + l.quantite * l.prixUnitaire, 0);
+    const total = subtotal + doc.montantTVA;
+    const encaisse = doc.paiements.reduce((s, p) => s + p.montant, 0) + montant;
     if (encaisse >= total && doc.statut !== "PAYEE") {
       await tx.document.update({ where: { id: documentId }, data: { statut: "PAYEE" } });
     }

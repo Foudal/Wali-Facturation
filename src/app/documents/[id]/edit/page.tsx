@@ -33,6 +33,8 @@ export default async function EditDocumentPage({ params }: PageProps<"/documents
             dateEmission: formatDateInput(doc.dateEmission),
             dateEcheance: doc.dateEcheance ? formatDateInput(doc.dateEcheance) : undefined,
             notes: doc.notes ?? undefined,
+            devise: doc.devise,
+            tva: String(doc.tva),
             lignes: doc.lignes.map((l) => ({
               description: l.description,
               quantite: String(l.quantite),

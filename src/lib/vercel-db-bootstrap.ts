@@ -25,6 +25,10 @@ CREATE TABLE "Document" (
     "dateEmission" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dateEcheance" DATETIME,
     "notes" TEXT,
+    "devise" TEXT NOT NULL DEFAULT 'EUR',
+    "tauxChange" REAL NOT NULL DEFAULT 1.0,
+    "tva" REAL NOT NULL DEFAULT 18.0,
+    "montantTVA" REAL NOT NULL DEFAULT 0.0,
     "clientId" TEXT NOT NULL,
     "convertedFromId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -119,10 +123,19 @@ function seedDemoData(db: Database.Database) {
     dateEmission: string;
     dateEcheance?: string;
     notes?: string;
+    devise?: string;
+    tauxChange?: number;
+    tva?: number;
     lignes: { description: string; quantite: number; prixUnitaire: number }[];
     paiements?: { montant: number; date: string; methode: string }[];
   }) {
     const documentId = id();
+    const devise = opts.devise ?? "EUR";
+    const tauxChange = opts.tauxChange ?? 1.0;
+    const tva = opts.tva ?? 18.0;
+    const subtotal = opts.lignes.reduce((sum, l) => sum + l.quantite * l.prixUnitaire, 0);
+    const montantTVA = Math.round(subtotal * (tva / 100) * 100) / 100;
+
     insertDocument.run({
       id: documentId,
       type: opts.type,
@@ -131,6 +144,10 @@ function seedDemoData(db: Database.Database) {
       dateEmission: iso(opts.dateEmission),
       dateEcheance: opts.dateEcheance ? iso(opts.dateEcheance) : null,
       notes: opts.notes ?? null,
+      devise,
+      tauxChange,
+      tva,
+      montantTVA,
       clientId: opts.clientId,
       createdAt: now,
       updatedAt: now,
@@ -148,11 +165,13 @@ function seedDemoData(db: Database.Database) {
     clientId: clients[0].id,
     dateEmission: "2026-07-25",
     dateEcheance: "2026-08-25",
+    devise: "GNF",
+    tva: 18.0,
     lignes: [
-      { description: "Refonte identité visuelle", quantite: 1, prixUnitaire: 2700 },
-      { description: "Déclinaison supports imprimés", quantite: 1, prixUnitaire: 540 },
+      { description: "Refonte identité visuelle", quantite: 1, prixUnitaire: 2700000 },
+      { description: "Déclinaison supports imprimés", quantite: 1, prixUnitaire: 540000 },
     ],
-    paiements: [{ montant: 3240, date: "2026-08-10", methode: "virement" }],
+    paiements: [{ montant: 3888000, date: "2026-08-10", methode: "virement" }],
   });
 
   addDocument({
@@ -162,6 +181,8 @@ function seedDemoData(db: Database.Database) {
     clientId: clients[1].id,
     dateEmission: "2026-08-01",
     dateEcheance: "2026-08-31",
+    devise: "USD",
+    tva: 0.0,
     lignes: [{ description: "Séance photo produit (demi-journée)", quantite: 1, prixUnitaire: 1180 }],
   });
 
@@ -172,6 +193,8 @@ function seedDemoData(db: Database.Database) {
     clientId: clients[2].id,
     dateEmission: "2026-06-15",
     dateEcheance: "2026-07-15",
+    devise: "EUR",
+    tva: 20.0,
     lignes: [{ description: "Menu & signalétique terrasse", quantite: 1, prixUnitaire: 620 }],
   });
 
@@ -182,6 +205,8 @@ function seedDemoData(db: Database.Database) {
     clientId: clients[1].id,
     dateEmission: "2026-08-08",
     dateEcheance: "2026-09-08",
+    devise: "USD",
+    tva: 0.0,
     notes: "En attente de validation du client avant démarrage.",
     lignes: [
       { description: "Refonte site vitrine (5 pages)", quantite: 1, prixUnitaire: 2400 },

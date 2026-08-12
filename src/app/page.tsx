@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { StatutBadge } from "@/components/statut-badge";
-import { computeTotal, computeEncaisse, effectiveStatut } from "@/lib/documents";
+import { computeSubtotal, computeTVA, computeEncaisse, effectiveStatut } from "@/lib/documents";
 import { formatMontant, formatDate } from "@/lib/format";
 
 // Le tableau de bord reflète l'état de la base à chaque requête (paiements,
@@ -32,7 +32,9 @@ export default async function Home() {
   const encaisseMois = encaissementsCeMois._sum.montant ?? 0;
 
   const enAttente = factures.reduce((sum, f) => {
-    const total = computeTotal(f.lignes);
+    const subtotal = computeSubtotal(f.lignes);
+    const montantTVA = computeTVA(subtotal, f.tva);
+    const total = subtotal + montantTVA;
     const encaisse = computeEncaisse(f.paiements);
     const solde = total - encaisse;
     const statut = effectiveStatut(f, solde);
@@ -70,13 +72,15 @@ export default async function Home() {
               </p>
               {hasData ? (
                 dernieresFactures.map((f) => {
-                  const total = computeTotal(f.lignes);
+                  const subtotal = computeSubtotal(f.lignes);
+                  const montantTVA = computeTVA(subtotal, f.tva);
+                  const total = subtotal + montantTVA;
                   return (
                     <div key={f.id} className="row">
                       <span>
                         {f.numero} · {f.client.nom}
                       </span>
-                      <strong>{formatMontant(total)}</strong>
+                      <strong>{formatMontant(total, f.devise)}</strong>
                     </div>
                   );
                 })
@@ -130,7 +134,9 @@ export default async function Home() {
           </div>
           <div className="card mt-4 divide-y divide-[var(--line)] overflow-hidden">
             {dernieresFactures.map((f) => {
-              const total = computeTotal(f.lignes);
+              const subtotal = computeSubtotal(f.lignes);
+              const montantTVA = computeTVA(subtotal, f.tva);
+              const total = subtotal + montantTVA;
               const encaisse = computeEncaisse(f.paiements);
               const statut = effectiveStatut(f, total - encaisse);
               return (
@@ -146,7 +152,7 @@ export default async function Home() {
                     <p className="text-xs text-[var(--muted)]">{formatDate(f.dateEmission)}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-[var(--ink)]">{formatMontant(total)}</span>
+                    <span className="text-sm font-semibold text-[var(--ink)]">{formatMontant(total, f.devise)}</span>
                     <StatutBadge statut={statut} />
                   </div>
                 </Link>

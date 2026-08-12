@@ -1,8 +1,21 @@
-export function formatMontant(value: number): string {
+import { DEVISE_DECIMALS } from "@/lib/constants";
+
+export function formatMontant(value: number, devise: string = "EUR"): string {
+  const decimals = DEVISE_DECIMALS[devise as keyof typeof DEVISE_DECIMALS] ?? 2;
+
+  // GNF doesn't have a standard Unicode currency code in Intl, so we handle it specially
+  if (devise === "GNF") {
+    return new Intl.NumberFormat("fr-FR", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(value) + " FG";
+  }
+
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 2,
+    currency: devise,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   }).format(value);
 }
 

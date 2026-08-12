@@ -35,3 +35,29 @@ export const STATUT_TONES: Record<string, "neutral" | "positive" | "warning" | "
 };
 
 export const PAIEMENT_METHODES = ["virement", "carte", "cheque", "especes", "autre"] as const;
+
+export const DEVISES = {
+  GNF: "GNF",
+  USD: "USD",
+  EUR: "EUR",
+} as const;
+
+export type Devise = (typeof DEVISES)[keyof typeof DEVISES];
+
+export const DEVISE_LABELS: Record<string, string> = {
+  GNF: "Franc guinéen",
+  USD: "Dollar US",
+  EUR: "Euro",
+};
+
+export const DEVISE_SYMBOLS: Record<string, string> = {
+  GNF: "FG",
+  USD: "$",
+  EUR: "€",
+};
+
+export const DEVISE_DECIMALS: Record<string, number> = {
+  GNF: 0, // Guinea franc uses no decimals (like XOF)
+  USD: 2,
+  EUR: 2,
+};

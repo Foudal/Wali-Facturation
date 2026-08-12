@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { formatMontant } from "@/lib/format";
+import { DEVISES } from "@/lib/constants";
 
 type ClientOption = { id: string; nom: string };
 type LigneValue = { description: string; quantite: string; prixUnitaire: string };
@@ -25,17 +26,21 @@ export function DocumentForm({
     dateEmission?: string;
     dateEcheance?: string;
     notes?: string;
+    devise?: string;
+    tva?: string;
     lignes?: LigneValue[];
   };
   submitLabel: string;
   lockType?: boolean;
 }) {
   const [type, setType] = useState<"DEVIS" | "FACTURE">(defaultType ?? "FACTURE");
+  const [devise, setDevise] = useState(initial?.devise ?? "EUR");
+  const [tva, setTva] = useState(initial?.tva ?? "18.0");
   const [lignes, setLignes] = useState<LigneValue[]>(
     initial?.lignes && initial.lignes.length > 0 ? initial.lignes : [{ ...emptyLigne }],
   );
 
-  const total = useMemo(
+  const subtotal = useMemo(
     () =>
       lignes.reduce((sum, l) => {
         const q = parseFloat(l.quantite);
@@ -44,6 +49,13 @@ export function DocumentForm({
       }, 0),
     [lignes],
   );
+
+  const montantTVA = useMemo(() => {
+    const rate = parseFloat(tva);
+    return Number.isFinite(rate) ? Math.round(subtotal * (rate / 100) * 100) / 100 : 0;
+  }, [subtotal, tva]);
+
+  const total = subtotal + montantTVA;
 
   function updateLigne(index: number, patch: Partial<LigneValue>) {
     setLignes((prev) => prev.map((l, i) => (i === index ? { ...l, ...patch } : l)));
@@ -89,6 +101,29 @@ export function DocumentForm({
         <div className="field">
           <label htmlFor="dateEcheance">Échéance</label>
           <input id="dateEcheance" name="dateEcheance" type="date" defaultValue={initial?.dateEcheance} />
+        </div>
+        <div className="field">
+          <label htmlFor="devise">Devise</label>
+          <select id="devise" name="devise" value={devise} onChange={(e) => setDevise(e.target.value)}>
+            {Object.values(DEVISES).map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="tva">TVA (%)</label>
+          <input
+            id="tva"
+            name="tva"
+            type="number"
+            min="0"
+            max="100"
+            step="0.5"
+            value={tva}
+            onChange={(e) => setTva(e.target.value)}
+          />
         </div>
         <div className="field sm:col-span-2">
           <label htmlFor="notes">Notes (optionnel)</label>
@@ -141,7 +176,7 @@ export function DocumentForm({
                 {i === 0 && <label>Sous-total</label>}
                 <p className="px-1 py-2 text-sm font-semibold text-[var(--ink)]">
                   {Number.isFinite(parseFloat(ligne.quantite)) && Number.isFinite(parseFloat(ligne.prixUnitaire))
-                    ? formatMontant(parseFloat(ligne.quantite) * parseFloat(ligne.prixUnitaire))
+                    ? formatMontant(parseFloat(ligne.quantite) * parseFloat(ligne.prixUnitaire), devise)
                     : "—"}
                 </p>
               </div>
@@ -166,8 +201,14 @@ export function DocumentForm({
           + Ajouter une ligne
         </button>
 
-        <div className="mt-6 flex justify-end border-t border-[var(--line)] pt-4">
-          <p className="text-lg font-bold text-[var(--ink-2)]">Total : {formatMontant(total)}</p>
+        <div className="mt-6 flex flex-col items-end gap-2 border-t border-[var(--line)] pt-4">
+          <p className="text-sm text-[var(--ink-1)]">Sous-total : {formatMontant(subtotal, devise)}</p>
+          {montantTVA > 0 && (
+            <p className="text-sm text-[var(--ink-1)]">
+              TVA ({tva}%) : {formatMontant(montantTVA, devise)}
+            </p>
+          )}
+          <p className="text-lg font-bold text-[var(--ink-2)]">Total : {formatMontant(total, devise)}</p>
         </div>
       </div>
 

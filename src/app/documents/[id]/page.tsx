@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { StatutBadge } from "@/components/statut-badge";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
-import { computeTotal, computeEncaisse, effectiveStatut } from "@/lib/documents";
+import { computeTotal, computeSubtotal, computeTVA, computeEncaisse, effectiveStatut } from "@/lib/documents";
 import { formatMontant, formatDate } from "@/lib/format";
 import { PAIEMENT_METHODES } from "@/lib/constants";
 import {
@@ -28,7 +28,9 @@ export default async function DocumentDetailPage({ params }: PageProps<"/documen
 
   if (!doc) notFound();
 
-  const total = computeTotal(doc.lignes);
+  const subtotal = computeSubtotal(doc.lignes);
+  const montantTVA = computeTVA(subtotal, doc.tva);
+  const total = subtotal + montantTVA;
   const encaisse = computeEncaisse(doc.paiements);
   const solde = total - encaisse;
   const statut = effectiveStatut(doc, solde);
@@ -44,7 +46,7 @@ export default async function DocumentDetailPage({ params }: PageProps<"/documen
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            {isDevis ? "Devis" : "Facture"}
+            {isDevis ? "Devis" : "Facture"} · {doc.devise}
           </p>
           <h1 className="text-2xl font-bold text-[var(--ink-2)] sm:text-3xl">{doc.numero}</h1>
           <Link href={`/clients/${doc.client.id}`} className="text-sm font-medium text-[var(--brand)]">
@@ -100,9 +102,9 @@ export default async function DocumentDetailPage({ params }: PageProps<"/documen
                 <tr key={ligne.id} className="border-b border-dashed border-[var(--line)]">
                   <td className="py-2.5 pr-2">{ligne.description}</td>
                   <td className="py-2.5 pr-2 text-[var(--muted)]">{ligne.quantite}</td>
-                  <td className="py-2.5 pr-2 text-[var(--muted)]">{formatMontant(ligne.prixUnitaire)}</td>
+                  <td className="py-2.5 pr-2 text-[var(--muted)]">{formatMontant(ligne.prixUnitaire, doc.devise)}</td>
                   <td className="py-2.5 text-right font-medium">
-                    {formatMontant(ligne.quantite * ligne.prixUnitaire)}
+                    {formatMontant(ligne.quantite * ligne.prixUnitaire, doc.devise)}
                   </td>
                 </tr>
               ))}
@@ -113,11 +115,17 @@ export default async function DocumentDetailPage({ params }: PageProps<"/documen
         {doc.notes && <p className="mt-4 text-sm text-[var(--muted)]">{doc.notes}</p>}
 
         <div className="mt-6 flex flex-col items-end gap-1 border-t border-[var(--line)] pt-4">
-          <p className="text-sm text-[var(--muted)]">Total : {formatMontant(total)}</p>
+          <p className="text-sm text-[var(--muted)]">Sous-total : {formatMontant(subtotal, doc.devise)}</p>
+          {montantTVA > 0 && (
+            <p className="text-sm text-[var(--muted)]">
+              TVA ({doc.tva}%) : {formatMontant(montantTVA, doc.devise)}
+            </p>
+          )}
+          <p className="text-sm font-semibold text-[var(--ink-2)]">Total : {formatMontant(total, doc.devise)}</p>
           {!isDevis && (
             <>
-              <p className="text-sm text-[var(--positive-fg)]">Encaissé : {formatMontant(encaisse)}</p>
-              <p className="text-lg font-bold text-[var(--ink-2)]">Solde dû : {formatMontant(solde)}</p>
+              <p className="text-sm text-[var(--positive-fg)]">Encaissé : {formatMontant(encaisse, doc.devise)}</p>
+              <p className="text-lg font-bold text-[var(--ink-2)]">Solde dû : {formatMontant(solde, doc.devise)}</p>
             </>
           )}
         </div>
@@ -197,7 +205,7 @@ export default async function DocumentDetailPage({ params }: PageProps<"/documen
                   <span className="text-[var(--muted)]">
                     {formatDate(p.date)} {p.methode ? `· ${p.methode}` : ""}
                   </span>
-                  <span className="font-semibold text-[var(--ink-2)]">{formatMontant(p.montant)}</span>
+                  <span className="font-semibold text-[var(--ink-2)]">{formatMontant(p.montant, doc.devise)}</span>
                 </li>
               ))}
             </ul>

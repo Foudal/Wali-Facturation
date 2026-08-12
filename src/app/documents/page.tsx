@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { StatutBadge } from "@/components/statut-badge";
-import { computeTotal, computeEncaisse, effectiveStatut } from "@/lib/documents";
+import { computeSubtotal, computeTVA, computeEncaisse, effectiveStatut } from "@/lib/documents";
 import { formatMontant, formatDate } from "@/lib/format";
 
 export default async function DocumentsPage({ searchParams }: PageProps<"/documents">) {
@@ -57,7 +57,9 @@ export default async function DocumentsPage({ searchParams }: PageProps<"/docume
       ) : (
         <div className="card mt-6 divide-y divide-[var(--line)] overflow-hidden">
           {documents.map((doc) => {
-            const total = computeTotal(doc.lignes);
+            const subtotal = computeSubtotal(doc.lignes);
+            const montantTVA = computeTVA(subtotal, doc.tva);
+            const total = subtotal + montantTVA;
             const encaisse = computeEncaisse(doc.paiements);
             const statut = effectiveStatut(doc, total - encaisse);
             return (
@@ -73,7 +75,7 @@ export default async function DocumentsPage({ searchParams }: PageProps<"/docume
                   <p className="text-xs text-[var(--muted)]">{formatDate(doc.dateEmission)}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-[var(--ink)]">{formatMontant(total)}</span>
+                  <span className="text-sm font-semibold text-[var(--ink)]">{formatMontant(total, doc.devise)}</span>
                   <StatutBadge statut={statut} />
                 </div>
               </Link>
